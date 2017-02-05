@@ -10,28 +10,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import java.util.Random;
-
 public class MainActivity extends AppCompatActivity {
 
 
-    float values[] = {300, 400, 100/*, 500*/};
+    private float values[] = {300, 400, 100};
     private MyGraphView pieChartView;
-    private LinearLayout pieChartContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        pieChartContainer = (LinearLayout) findViewById(R.id.linear);
-        values = calculateData(values);
+        LinearLayout pieChartContainer = (LinearLayout) findViewById(R.id.linear);
+        // calculate in re-write data
+        values = calculateDataToAngles(values);
         pieChartView = new MyGraphView(this, values);
         pieChartContainer.addView(pieChartView);
-
     }
 
-    private float[] calculateData(float[] data) {
+    private float[] calculateDataToAngles(float[] data) {
         float total = 0;
         for (float value : data) {
             total += value;
@@ -43,21 +40,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void sendMessage(View view) {
-        Random random = new Random();
-        int start = random.nextInt(values.length);
-        float[] data = new float[values.length];
-        for (int i = start; i < start + values.length; i++) {
-            data[i - start] = values[i % values.length];
-        }
-        pieChartView.setValues(calculateData(data));
-        pieChartView.invalidate();
+    // on click handler
+    public void sendQuestionOnClick(View view) {
+        updateChartValues();
     }
+
+    private void updateChartValues() {
+        float[] temp = new float[values.length];
+        System.arraycopy(values, 0, temp, 0, values.length);
+        for (int i = 0; i < values.length; i++) {
+            values[i] = temp[(i + 1) % values.length];
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                pieChartView.setValues(values);
+            }
+        });
+    }
+
 
     private class MyGraphView extends View {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final float[] value_degree;
-        private final int[] COLORS = {Color.BLUE, Color.GREEN, /*Color.GRAY, Color.CYAN,*/ Color.RED};
+        private final int[] COLORS = {Color.GREEN, Color.RED, Color.GRAY};
         private RectF rectf = new RectF(20, 20, 300, 300);
 
 
@@ -68,8 +75,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        public void setValues(float[] values) {
+        private void setValues(float[] values) {
             System.arraycopy(values, 0, value_degree, 0, values.length);
+            invalidate();
         }
 
 
