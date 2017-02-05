@@ -119,18 +119,20 @@
 
             <Button
                 android:text="שאלה חדשה"
-                android:layout_width="131dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/button2"
-                android:layout_weight="0.04" />
-
-            <Button
-                android:text="שלח שאלה"
                 android:layout_width="110dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/button"
                 android:layout_weight="0.05"
                 android:elevation="0dp" />
+
+            <Button
+                android:text="שלח שאלה"
+                android:layout_width="131dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/button2"
+                android:layout_weight="0.04"
+                android:onClick="sendMessage"/>
+
         </LinearLayout>
 
     </LinearLayout>
