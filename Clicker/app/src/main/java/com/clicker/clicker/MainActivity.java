@@ -1,13 +1,11 @@
 package com.clicker.clicker;
 
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int TIME_DEFAULT_SEC = 30;
     public static final int TIME_ADDITION_MILLI = TIME_DEFAULT_SEC * 1000;
     public static final int MAX_TIME_MINUTES = 10;
+    private static final String TAG = "ClickerAPP";
+
     // GUI
 
     static private View[] classComponents;
@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText numberOfStudentsText;
 
-    private MyGraphView pieChartView;
+    private PieGraphView pieGraphView;
 
     // End GUI
 
@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         storeUI();
+        BTChangeName();
     }
 
     private void storeUI() {
@@ -178,11 +179,11 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout pieChartContainer = (LinearLayout) findViewById(R.id.pieChartGrid);
         // calculate in re-write data
         float[] angleValues = rawDataToAngles(new float[]{0, 0, 1});
-        pieChartView = new MyGraphView(this, angleValues);
-        pieChartView.setVisibility(View.INVISIBLE);
-        pieChartContainer.addView(pieChartView);
+        pieGraphView = new PieGraphView(this, angleValues);
+        pieGraphView.setVisibility(View.INVISIBLE);
+        pieChartContainer.addView(pieGraphView);
 
-        afterQuestionSentComponents = new View[]{answerYesLabel, answerNoLabel, pieChartView};
+        afterQuestionSentComponents = new View[]{answerYesLabel, answerNoLabel, pieGraphView};
     }
 
 
@@ -255,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 answerYesLabel.setText(getString(R.string.answerYes) + " " + answeredYes);
                 answerNoLabel.setText(getString(R.string.answerNo) + " " + answeredNo);
-                pieChartView.setValues(values);
+                pieGraphView.setPieDegreesValues(values);
             }
         });
     }
@@ -316,50 +317,41 @@ public class MainActivity extends AppCompatActivity {
         countDown(newTimeMilliseconds);
     }
 
-    private class MyGraphView extends View {
-        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final float[] valueDegrees;
-        private final int[] COLORS = {Color.GREEN, Color.RED, Color.GRAY};
-        private RectF rectf = new RectF(50, 50, 500, 500);
 
-
-        private MyGraphView(Context context, float[] valueDegrees) {
-            super(context);
-            validateLength(valueDegrees);
-            this.valueDegrees = valueDegrees;
-        }
-
-        private void validateLength(float[] valueDegrees) {
-            if (COLORS.length != valueDegrees.length) {
-                throw new RuntimeException("Can't set values for length different than " + COLORS.length);
+    private void BTChangeName() {
+        // BT Rename
+        final String sNewName = "Syntactics";
+        final BluetoothAdapter myBTAdapter = BluetoothAdapter.getDefaultAdapter();
+        final long timeToGiveUpMs = System.currentTimeMillis() + 10000;
+        Log.i(TAG, myBTAdapter == null ? "null BT !!! " : myBTAdapter.toString());
+        if (myBTAdapter != null) {
+            String sOldName = myBTAdapter.getName();
+            Log.i(TAG, "Old BT Name is: " + myBTAdapter.getName());
+            if (!sOldName.equalsIgnoreCase(sNewName)) {
+                final Handler myTimerHandler = new Handler();
+                myBTAdapter.enable();
+                myTimerHandler.postDelayed(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                if (myBTAdapter.isEnabled()) {
+                                    myBTAdapter.setName(sNewName);
+                                    if (sNewName.equalsIgnoreCase(myBTAdapter.getName())) {
+                                        Log.i(TAG, "Updated BT Name to " + myBTAdapter.getName());
+                                        myBTAdapter.disable();
+                                    }
+                                }
+                                if ((!sNewName.equalsIgnoreCase(myBTAdapter.getName())) && (System.currentTimeMillis() < timeToGiveUpMs)) {
+                                    myTimerHandler.postDelayed(this, 500);
+                                    if (myBTAdapter.isEnabled())
+                                        Log.i(TAG, "Update BT Name: waiting on BT Enable");
+                                    else
+                                        Log.i(TAG, "Update BT Name: waiting for Name (" + sNewName + ") to set in");
+                                }
+                            }
+                        }, 500);
             }
         }
-
-
-        private void setValues(float[] values) {
-            validateLength(values);
-
-            // copy to mine
-            System.arraycopy(values, 0, valueDegrees, 0, values.length);
-            invalidate();
-        }
-
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            float temp = 0;
-            for (int i = 0; i < valueDegrees.length; i++) {
-                if (i == 0) {
-                    paint.setColor(COLORS[i]);
-                    canvas.drawArc(rectf, 0, valueDegrees[i], true, paint);
-                } else {
-                    temp += valueDegrees[i - 1];
-                    paint.setColor(COLORS[i]);
-                    canvas.drawArc(rectf, temp, valueDegrees[i], true, paint);
-                }
-            }
-        }
-
     }
+
 }
