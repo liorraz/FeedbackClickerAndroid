@@ -19,12 +19,38 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
 
-        <TextView
-            android:text="כיתה חדשה"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView2"
-            android:layout_weight="0.05" />
+            android:layout_height="34dp"
+            android:layout_weight="0.11">
+
+            <Button
+                android:text="צור"
+                android:layout_width="59dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/createClassButton"
+                android:onClick="createClassButtonOnClick"
+                />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:text="כיתה חדשה"
+                android:ems="10"
+                android:id="@+id/classNameText"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:singleLine="false" />
+
+            <TextView
+                android:text="שם הכיתה"
+                android:layout_width="152dp"
+                android:layout_height="match_parent"
+                android:id="@+id/classNameLabel" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="horizontal"
@@ -37,16 +63,18 @@
                 android:layout_height="wrap_content"
                 android:text="כתוב את השאלה כאן"
                 android:ems="10"
-                android:id="@+id/editText"
+                android:id="@+id/questionText"
                 android:textSize="14sp"
-                android:layout_weight="1.46" />
+                android:layout_weight="1.46"
+                android:visibility="invisible" />
 
             <TextView
                 android:text="שאלה"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView8"
-                android:layout_weight="1" />
+                android:id="@+id/questionLabel"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
         </LinearLayout>
 
@@ -58,8 +86,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_marginBottom="15dp"
-            android:id="@+id/linear"
-            android:weightSum="1">
+            android:weightSum="1"
+            android:id="@+id/pieChartGrid">
 
         </LinearLayout>
 
@@ -70,30 +98,35 @@
             android:weightSum="1">
 
             <EditText
-                android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
                 android:ems="10"
-                android:id="@+id/editText4"
-                android:text="00"
-                android:layout_weight="0.03"
-                android:textStyle="normal|bold" />
+                android:id="@+id/timeMinText"
+                android:text="@string/defaultTimeMin"
+                android:textStyle="normal|bold"
+                android:visibility="invisible"
+                android:layout_width="25dp"
+                android:layout_marginLeft="20dp"
+                android:maxLength="2"
+                android:width="100dp"
+                android:layout_weight="0.08" />
 
             <TextView
                 android:text=":"
                 android:layout_width="15dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView6"
+                android:id="@+id/timeSeperatorLabel"
                 android:textSize="24sp"
-                android:textStyle="normal|bold" />
+                android:textStyle="normal|bold"
+                android:visibility="invisible" />
 
             <EditText
                 android:layout_width="25dp"
                 android:layout_height="wrap_content"
                 android:inputType="time"
                 android:ems="10"
-                android:id="@+id/editText3"
-                android:text="00"
+                android:id="@+id/timeSecText"
+                android:text="@string/defaultTimeSec"
                 android:textAlignment="center"
                 android:textStyle="normal|bold"
                 android:layout_marginRight="20dp"
@@ -101,14 +134,18 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
-                android:layout_weight="0.05" />
+                android:layout_weight="0.05"
+                android:visibility="invisible"
+                android:maxLength="2"
+                android:width="100dp" />
 
             <TextView
                 android:text="זמן"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/textView4"
-                android:layout_weight="0.00" />
+                android:id="@+id/timeLabel"
+                android:layout_weight="0.00"
+                android:visibility="invisible" />
 
         </LinearLayout>
 
@@ -118,20 +155,23 @@
             android:layout_height="62dp">
 
             <Button
-                android:text="שאלה חדשה"
+                android:text="@string/moreTimeStr"
                 android:layout_width="110dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/button"
+                android:id="@+id/buttonLeft"
                 android:layout_weight="0.05"
-                android:elevation="0dp" />
+                android:elevation="0dp"
+                android:onClick="leftButtonOnClick"
+                android:visibility="invisible" />
 
             <Button
-                android:text="שלח שאלה"
+                android:text="@string/newQuestionStr"
                 android:layout_width="131dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/button2"
+                android:id="@+id/buttonRight"
                 android:layout_weight="0.04"
-                android:onClick="sendQuestionOnClick"/>
+                android:onClick="rightButtonOnClick"
+                android:visibility="invisible" />
 
         </LinearLayout>
 

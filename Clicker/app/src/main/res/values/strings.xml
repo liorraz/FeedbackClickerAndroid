@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Clicker</string>
+    <string name="moreTimeStr">עוד 30 שנ</string>
+    <string name="stopTimeStr">סיים מענה</string>
+    <string name="newQuestionStr">שאלה חדשה</string>
+    <string name="defaultTimeSec">30</string>
+    <string name="defaultTimeMin">00</string>
 </resources>
