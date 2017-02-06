@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
                     makeEnabled(true, timeComponents);
                     questionLabelComponent[0].setText(questionPrefix + " " + questionNumber);
                     makeVisible(true, buttons[1]); // add "question" button
+                    buttons[1].setText(R.string.sendQuestionStr);
                     return state;
                 }
                 return this;
@@ -86,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
             State turnTo(State state) {
                 if (state == QUESTION_DEFINITION) {
                     makeVisible(false, pieChartComponents);
-                    makeVisible(false, timeComponents);
+                    makeEnabled(true, timeComponents);
                     makeVisible(false, buttons[2]);
+                    buttons[1].setText(R.string.sendQuestionStr);
                     makeEnabled(true, questionComponents);
                     makeEnabled(true, timeComponents);
                     questionLabelComponent[0].setText(questionPrefix + " " + questionNumber);
