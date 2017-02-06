@@ -12,31 +12,49 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
-import java.util.Locale;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
 
     public static final int TIME_DEFAULT_SEC = 30;
     public static final int TIME_ADDITION_MILLI = TIME_DEFAULT_SEC * 1000;
+    public static final int MAX_TIME_MINUTES = 10;
     // GUI
-    private MyGraphView pieChartView;
-
-    private EditText timeMinText;
-    private EditText timeSecText;
 
     static private View[] classComponents;
     static private View[] timeComponents;
     static private View[] questionComponents;
-    static private View[] pieChartComponents;
     static private Button[] buttons; // create, right , left
+    static private View[] afterQuestionSentComponents;
 
     static private TextView[] questionLabelComponent;
 
+    private TextView answerYesLabel;
+    private TextView answerNoLabel;
+
+    private NumberPicker timeMinutesPicker;
+    private NumberPicker timeSecondsPicker;
+
+    private EditText numberOfStudentsText;
+
+    private MyGraphView pieChartView;
+
+    // End GUI
+
     private State state = State.CLASS_DEFINITION;
     private CountDownTimer countDownTimer;
+
+
+    // pie test
+    private int yesNumber = 0;
+    private int noNumber = 0;
+    private int numberOfStudents = 0;
+
+    private final static Random random = new Random();
 
 
     private enum State {
@@ -62,9 +80,8 @@ public class MainActivity extends AppCompatActivity {
             State turnTo(State state) {
                 if (state == QUESTION_SENDING) {
                     makeEnabled(false, questionComponents);
-                    makeVisible(true, timeComponents);
                     makeEnabled(false, timeComponents);
-                    makeVisible(true, pieChartComponents);
+                    makeVisible(true, afterQuestionSentComponents);
                     buttons[1].setText(R.string.stopTimeStr);
                     makeVisible(true, buttons[2]);
                     makeEnabled(true, buttons[2]);
@@ -86,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             State turnTo(State state) {
                 if (state == QUESTION_DEFINITION) {
-                    makeVisible(false, pieChartComponents);
+                    makeVisible(false, afterQuestionSentComponents);
                     makeEnabled(true, timeComponents);
                     makeVisible(false, buttons[2]);
                     buttons[1].setText(R.string.sendQuestionStr);
@@ -125,10 +142,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        storeUI();
+    }
+
+    private void storeUI() {
         EditText classNameText = (EditText) findViewById(R.id.classNameText);
         TextView classNameLabel = (TextView) findViewById(R.id.classNameLabel);
-        timeMinText = (EditText) findViewById(R.id.timeMinText);
-        timeSecText = (EditText) findViewById(R.id.timeSecText);
+        timeMinutesPicker = (NumberPicker) findViewById(R.id.timeMinPick);
+        timeSecondsPicker = (NumberPicker) findViewById(R.id.timeSecPic);
+        timeSecondsPicker.setMinValue(0);
+        timeSecondsPicker.setMaxValue(59);
+        timeMinutesPicker.setMinValue(0);
+        timeMinutesPicker.setMaxValue(MAX_TIME_MINUTES);
+        timeSecondsPicker.setValue(TIME_DEFAULT_SEC);
         TextView questionLabel = (TextView) findViewById(R.id.questionLabel);
         questionPrefix = questionLabel.getText().toString();
         questionLabel.setText(questionPrefix + " " + questionNumber); // locale not good! (hebrew)
@@ -139,25 +165,28 @@ public class MainActivity extends AppCompatActivity {
         Button leftButton = (Button) findViewById(R.id.buttonLeft);
         Button rightButton = (Button) findViewById(R.id.buttonRight);
 
-        classComponents = new View[]{classNameText, classNameLabel, createClassButton};
-        timeComponents = new View[]{timeLabel, timeSecText, timeSeparatorLabel, timeMinText};
+        numberOfStudentsText = (EditText) findViewById(R.id.numberOfStudentsText);
+        answerYesLabel = (TextView) findViewById(R.id.answerYesLabel);
+        answerNoLabel = (TextView) findViewById(R.id.answerNoLabel);
+
+        classComponents = new View[]{classNameText, classNameLabel, createClassButton, numberOfStudentsText};
+        timeComponents = new View[]{timeLabel, timeSecondsPicker, timeSeparatorLabel, timeMinutesPicker};
         questionComponents = new View[]{questionLabel, questionText};
         questionLabelComponent = new TextView[]{questionLabel};
         buttons = new Button[]{createClassButton, rightButton, leftButton};
 
         LinearLayout pieChartContainer = (LinearLayout) findViewById(R.id.pieChartGrid);
         // calculate in re-write data
-        float[] percentageValues = new float[]{0, 0, 100};
-        float[] angleValues = calculateDataToAngles(percentageValues);
+        float[] angleValues = rawDataToAngles(new float[]{0, 0, 1});
         pieChartView = new MyGraphView(this, angleValues);
         pieChartView.setVisibility(View.INVISIBLE);
         pieChartContainer.addView(pieChartView);
 
-        pieChartComponents = new View[]{pieChartView};
-
+        afterQuestionSentComponents = new View[]{answerYesLabel, answerNoLabel, pieChartView};
     }
 
-    private float[] calculateDataToAngles(float[] data) {
+
+    private float[] rawDataToAngles(float[] data) {
         float total = 0;
         for (float value : data) {
             total += value;
@@ -175,15 +204,40 @@ public class MainActivity extends AppCompatActivity {
 
             public void onTick(long millisUntilFinished) {
                 long secondsUntilFinished = millisUntilFinished / 1000;
-                long seconds = secondsUntilFinished % 60;
-                long minutes = secondsUntilFinished / 60;
-                timeMinText.setText(String.format(Locale.ENGLISH, "%d", minutes));
-                timeSecText.setText(String.format(Locale.ENGLISH, "%d", seconds));
+                int seconds = (int) (secondsUntilFinished % 60);
+                int minutes = (int) (secondsUntilFinished / 60);
+                timeMinutesPicker.setValue(minutes);
+                timeSecondsPicker.setValue(seconds);
+                randomizePeople();
+            }
+
+            private void randomizePeople() {
+                int currentYes = random.nextInt(3);
+                int currentNo = 2 - currentYes;
+                int tillNow = yesNumber + noNumber;
+                if (tillNow + currentYes <= numberOfStudents) {
+                    yesNumber += currentYes;
+                    tillNow += currentYes;
+                }
+                if (tillNow + currentNo <= numberOfStudents) {
+                    noNumber += currentNo;
+                    tillNow += currentNo;
+                }
+
+                if (tillNow == numberOfStudents) {
+                    stopTimer();
+                }
+
+                updateChartValues(yesNumber, noNumber, numberOfStudents - tillNow);
             }
 
             public void onFinish() {
+                timeMinutesPicker.setValue(0);
+                timeSecondsPicker.setValue(0);
                 countDownEnded();
             }
+
+
         };
         countDownTimer.start();
 
@@ -193,12 +247,14 @@ public class MainActivity extends AppCompatActivity {
         state = state.turnTo(State.QUESTION_STOPPING);
     }
 
-    private void updateChartValues(float[] percentageValues) {
-        final float[] values = calculateDataToAngles(percentageValues);
+    private void updateChartValues(final int answeredYes, final int answeredNo, final int noAnswered) {
+        final float[] values = rawDataToAngles(new float[]{answeredYes, answeredNo, noAnswered});
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                answerYesLabel.setText(getString(R.string.answerYes) + " " + answeredYes);
+                answerNoLabel.setText(getString(R.string.answerNo) + " " + answeredNo);
                 pieChartView.setValues(values);
             }
         });
@@ -206,6 +262,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void createClassButtonOnClick(View view) {
+        numberOfStudents = Integer.parseInt(numberOfStudentsText.getText().toString());
         state = state.turnTo(State.QUESTION_DEFINITION);
     }
 
@@ -226,21 +283,25 @@ public class MainActivity extends AppCompatActivity {
             state = state.turnTo(State.QUESTION_SENDING);
 
         } else if (state == State.QUESTION_SENDING) {
-            // stop time
-            countDownTimer.cancel();
-            countDownEnded();
+            stopTimer();
         } else if (state == State.QUESTION_STOPPING) {
             state = state.turnTo(State.QUESTION_DEFINITION);
-            timeSecText.setText(R.string.defaultTimeSec);
-            timeMinText.setText(R.string.defaultTimeMin);
-
+            timeSecondsPicker.setValue(TIME_DEFAULT_SEC);
+            timeMinutesPicker.setValue(0);
+            yesNumber = 0;
+            noNumber = 0;
         }
+    }
+
+    private void stopTimer() {
+        countDownTimer.cancel();
+        countDownEnded();
     }
 
 
     private long getTimeFieldsMilliseconds() {
-        long minutes = Long.parseLong(timeMinText.getText().toString());
-        long seconds = Long.parseLong(timeSecText.getText().toString());
+        long minutes = timeMinutesPicker.getValue();
+        long seconds = timeSecondsPicker.getValue();
         return ((minutes * 60) + seconds) * 1000;
     }
 
@@ -249,6 +310,9 @@ public class MainActivity extends AppCompatActivity {
         countDownTimer.cancel();
         long newTimeMilliseconds = getTimeFieldsMilliseconds();
         newTimeMilliseconds += TIME_ADDITION_MILLI;
+        if (newTimeMilliseconds > ((MAX_TIME_MINUTES * 60) + 59) * 1000) {
+            newTimeMilliseconds = ((MAX_TIME_MINUTES * 60) + 59) * 1000;
+        }
         countDown(newTimeMilliseconds);
     }
 
@@ -256,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final float[] valueDegrees;
         private final int[] COLORS = {Color.GREEN, Color.RED, Color.GRAY};
-        private RectF rectf = new RectF(20, 20, 300, 300);
+        private RectF rectf = new RectF(50, 50, 500, 500);
 
 
         private MyGraphView(Context context, float[] valueDegrees) {

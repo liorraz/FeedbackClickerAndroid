@@ -5,5 +5,7 @@
     <string name="newQuestionStr">שאלה חדשה</string>
     <string name="defaultTimeSec">30</string>
     <string name="defaultTimeMin">00</string>
+    <string name="answerYes">ענו כן</string>
+    <string name="answerNo">ענו לא</string>
     <string name="sendQuestionStr">שלח שאלה</string>
 </resources>
