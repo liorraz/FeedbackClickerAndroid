@@ -17,4 +17,10 @@
     <string name="questionStr">שאלה</string>
     <string name="timeSeperatorStr">:</string>
     <string name="timeStr">זמן</string>
+    <string name="changeBTname">Change BT Name</string>
+    <string name="changeBLEname">Change BLE Name</string>
+    <string name="scanBTdevices">Scan BT Devices</string>
+    <string name="scanBLEdevices">Scan BLE Devices</string>
+    <string name="enableBTDiscoverability">Enable BT Discoverability</string>
+    <string name="enableBLE">Enable BLE</string>
 </resources>

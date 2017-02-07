@@ -1,17 +1,30 @@
 package com.clicker.clicker;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 
@@ -21,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
     public static final int TIME_DEFAULT_SEC = 30;
     public static final int TIME_ADDITION_MILLI = TIME_DEFAULT_SEC * 1000;
     public static final int MAX_TIME_MINUTES = 10;
+    private static final int REQUEST_ENABLE_BT = 3;
 
-    private static final String TAG = "ClickerAPP";
+    //private static final String TAG = "ClickerAPP"; // for logs
 
     // GUI
     // currently static components are to be used by enum, to be fixed later
@@ -143,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         storeUI();
-        BTChangeName();
     }
 
     private void storeUI() {
@@ -323,17 +336,269 @@ public class MainActivity extends AppCompatActivity {
         questionText.setText("");
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.debug_menu, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.change_bt_name:
+                BTChangeName();
+                return true;
+            case R.id.enable_bt_discoverability:
+                enableBTDiscoverability();
+                return true;
+            case R.id.scan_bt_devices:
+                scanBTDevices();
+                return true;
+            case R.id.enable_ble:
+                enableBLE();
+                return true;
+            case R.id.change_ble_name:
+                toast("Not supported - change BT name ...");
+                return true;
+            case R.id.scan_ble_devices:
+                scanBLEDevices();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //private boolean mScanningBLE = false;
+
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private BluetoothAdapter.LeScanCallback mLeScanCallback = null;
+
+    private void scanBLEDevices() {
+
+        if (mLeScanCallback == null) {
+            mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi,
+                                     byte[] scanRecord) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
+                        }
+                    });
+                }
+            };
+        }
+
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setMessage("Set duration of Scan BLE Devices");
+        alertDialog.setTitle("Scan BLE Devices");
+        final EditText input = new EditText(MainActivity.this);
+        input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alertDialog.setView(input);
+        alertDialog.setPositiveButton("Enable",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Stops scanning after 10 seconds.
+                        int period = Integer.parseInt(input.getText().toString());
+                        scanLeDevice(true, period);
+                    }
+                });
+
+        alertDialog.setNegativeButton("Disable",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        scanLeDevice(false, 0);
+                        dialog.cancel();
+                    }
+                });
+
+        alertDialog.show();
+
+
+    }
+
+    private Handler scanLEDevicesHandler = null;
+
+    private void scanLeDevice(final boolean enable, final int period) {
+        if (mBluetoothAdapter == null) {
+            toast("Can't scan devices since the BLE adapter is null!");
+            return;
+        }
+        if (enable) {
+            if (scanLEDevicesHandler == null) {
+                scanLEDevicesHandler = new Handler();
+            }
+            // Stops scanning after a pre-defined scan period.
+            scanLEDevicesHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+//                    mScanningBLE = false;
+                    //noinspection deprecation
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                }
+            }, period);
+
+//            mScanningBLE = true;
+            //noinspection deprecation
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
+        } else {
+//            mScanningBLE = false;
+            //noinspection deprecation
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+        }
+
+    }
+
+
+    private void enableBLE() {
+
+        // Initializes Bluetooth adapter.
+        final BluetoothManager bluetoothManager =
+                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+        mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_ENABLE_BT) {
+            if (resultCode == Activity.RESULT_OK) {
+                toast("BT for BLE approved by user");
+            } else {
+                toast("BT for BLE not approved, return code: " + resultCode);
+            }
+        }
+
+    }
+
+    private BroadcastReceiver mReceiver = null;
+
+    private void scanBTDevices() {
+        // Create a BroadcastReceiver for ACTION_FOUND.
+        mReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                    // Discovery has found a device. Get the BluetoothDevice
+                    // object and its info from the Intent.
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    String deviceName = device.getName();
+                    String deviceHardwareAddress = device.getAddress(); // MAC addressZ
+                    toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
+                }
+            }
+        };
+
+
+        // Register for broadcasts when a device is discovered.
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, filter);
+        toast("mReceiver registered");
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (mReceiver != null) {
+            // Don't forget to unregister the ACTION_FOUND receiver.
+            unregisterReceiver(mReceiver);
+
+        }
+    }
+
+
+    private void enableBTDiscoverability() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setMessage("Set time for discoverability");
+        alertDialog.setTitle("Enable Discoverability");
+        final EditText input = new EditText(MainActivity.this);
+        input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alertDialog.setView(input);
+        alertDialog.setPositiveButton("Go",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        int time = Integer.parseInt(input.getText().toString());
+                        Intent discoverableIntent =
+                                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, time);
+                        startActivity(discoverableIntent);
+                    }
+                });
+
+        alertDialog.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+        alertDialog.show();
+    }
+
 
     private void BTChangeName() {
         // BT Rename
-        final String sNewName = "Syntactics";
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setMessage("Select the new BT Name");
+        alertDialog.setTitle("Change BT Name");
+        final EditText input = new EditText(MainActivity.this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        alertDialog.setView(input);
+        alertDialog.setPositiveButton("Go",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        String newName = input.getText().toString();
+                        changeBTName(newName);
+                    }
+                });
+
+        alertDialog.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+        alertDialog.show();
+    }
+
+    private void changeBTName(final String newName) {
+        if (newName.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    "Can't have empty BT Name", Toast.LENGTH_SHORT).show();
+        }
+
         final BluetoothAdapter myBTAdapter = BluetoothAdapter.getDefaultAdapter();
         final long timeToGiveUpMs = System.currentTimeMillis() + 10000;
-        Log.i(TAG, myBTAdapter == null ? "null BT !!! " : myBTAdapter.toString());
-        if (myBTAdapter != null) {
-            String sOldName = myBTAdapter.getName();
-            Log.i(TAG, "Old BT Name is: " + myBTAdapter.getName());
-            if (!sOldName.equalsIgnoreCase(sNewName)) {
+        if (myBTAdapter == null) {
+            toast("No BT Support !!!");
+        } else {
+            String oldName = myBTAdapter.getName();
+            toast("OLD BT Name is: " + oldName);
+            if (!oldName.equalsIgnoreCase(newName)) {
                 final Handler myTimerHandler = new Handler();
                 myBTAdapter.enable();
                 myTimerHandler.postDelayed(
@@ -341,23 +606,27 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void run() {
                                 if (myBTAdapter.isEnabled()) {
-                                    myBTAdapter.setName(sNewName);
-                                    if (sNewName.equalsIgnoreCase(myBTAdapter.getName())) {
-                                        Log.i(TAG, "Updated BT Name to " + myBTAdapter.getName());
+                                    myBTAdapter.setName(newName);
+                                    if (newName.equalsIgnoreCase(myBTAdapter.getName())) {
+                                        toast("Updated BT Name to " + myBTAdapter.getName());
                                         myBTAdapter.disable();
                                     }
                                 }
-                                if ((!sNewName.equalsIgnoreCase(myBTAdapter.getName())) && (System.currentTimeMillis() < timeToGiveUpMs)) {
+                                if ((!newName.equalsIgnoreCase(myBTAdapter.getName())) && (System.currentTimeMillis() < timeToGiveUpMs)) {
                                     myTimerHandler.postDelayed(this, 500);
                                     if (myBTAdapter.isEnabled())
-                                        Log.i(TAG, "Update BT Name: waiting on BT Enable");
+                                        toast("Update BT Name: waiting on BT Enable");
                                     else
-                                        Log.i(TAG, "Update BT Name: waiting for Name (" + sNewName + ") to set in");
+                                        toast("Update BT Name: waiting for Name (" + newName + ") to set in");
                                 }
                             }
                         }, 500);
             }
         }
+    }
+
+    private void toast(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
 }
