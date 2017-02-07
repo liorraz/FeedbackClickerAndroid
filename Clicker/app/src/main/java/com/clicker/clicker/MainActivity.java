@@ -21,40 +21,40 @@ public class MainActivity extends AppCompatActivity {
     public static final int TIME_DEFAULT_SEC = 30;
     public static final int TIME_ADDITION_MILLI = TIME_DEFAULT_SEC * 1000;
     public static final int MAX_TIME_MINUTES = 10;
+
     private static final String TAG = "ClickerAPP";
 
     // GUI
-
+    // currently static components are to be used by enum, to be fixed later
     static private View[] classComponents;
     static private View[] timeComponents;
     static private View[] questionComponents;
-    static private Button[] buttons; // create, right , left
+    static private Button[] mainButtons; // create, right , left
     static private View[] afterQuestionSentComponents;
+    static private TextView[] questionLabelComponent; // update question label
 
-    static private TextView[] questionLabelComponent;
+    private TextView answerYesLabel; // for counting answers
+    private TextView answerNoLabel; // for counting answers
+    private EditText numberOfStudentsText; // for counting answers
+    private PieGraphView pieGraphView; // for counting answers
 
-    private TextView answerYesLabel;
-    private TextView answerNoLabel;
+    private NumberPicker timeMinutesPicker; // for counting time
+    private NumberPicker timeSecondsPicker; // for counting tim
 
-    private NumberPicker timeMinutesPicker;
-    private NumberPicker timeSecondsPicker;
-
-    private EditText numberOfStudentsText;
-
-    private PieGraphView pieGraphView;
+    private EditText questionText; // for deleting
 
     // End GUI
 
     private State state = State.CLASS_DEFINITION;
+
     private CountDownTimer countDownTimer;
 
-
-    // pie test
+    // pie chart
     private int yesNumber = 0;
     private int noNumber = 0;
     private int numberOfStudents = 0;
 
-    private final static Random random = new Random();
+    private final static Random random = new Random();    // for testing only
 
 
     private enum State {
@@ -63,14 +63,14 @@ public class MainActivity extends AppCompatActivity {
             State turnTo(State state) {
                 if (state == QUESTION_DEFINITION) {
                     makeEnabled(false, classComponents);
-                    makeVisible(false, buttons[0]);// remove "create" button
+                    makeVisible(false, mainButtons[0]);// remove "create" button
                     makeVisible(true, questionComponents);
                     makeEnabled(true, questionComponents);
                     makeVisible(true, timeComponents);
                     makeEnabled(true, timeComponents);
                     questionLabelComponent[0].setText(questionPrefix + " " + questionNumber);
-                    makeVisible(true, buttons[1]); // add "question" button
-                    buttons[1].setText(R.string.sendQuestionStr);
+                    makeVisible(true, mainButtons[1]); // add "question" button
+                    mainButtons[1].setText(R.string.sendQuestionStr);
                     return state;
                 }
                 return this;
@@ -82,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
                     makeEnabled(false, questionComponents);
                     makeEnabled(false, timeComponents);
                     makeVisible(true, afterQuestionSentComponents);
-                    buttons[1].setText(R.string.stopTimeStr);
-                    makeVisible(true, buttons[2]);
-                    makeEnabled(true, buttons[2]);
+                    mainButtons[1].setText(R.string.stopTimeStr);
+                    makeVisible(true, mainButtons[2]);
+                    makeEnabled(true, mainButtons[2]);
                     return state;
                 }
                 return this;
@@ -93,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             State turnTo(State state) {
                 if (state == QUESTION_STOPPING) {
-                    buttons[1].setText(R.string.newQuestionStr);
-                    makeEnabled(false, buttons[2]);
+                    mainButtons[1].setText(R.string.newQuestionStr);
+                    makeEnabled(false, mainButtons[2]);
                     return state;
                 }
                 return this;
@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
                 if (state == QUESTION_DEFINITION) {
                     makeVisible(false, afterQuestionSentComponents);
                     makeEnabled(true, timeComponents);
-                    makeVisible(false, buttons[2]);
-                    buttons[1].setText(R.string.sendQuestionStr);
+                    makeVisible(false, mainButtons[2]);
+                    mainButtons[1].setText(R.string.sendQuestionStr);
                     makeEnabled(true, questionComponents);
                     makeEnabled(true, timeComponents);
                     questionLabelComponent[0].setText(questionPrefix + " " + questionNumber);
@@ -159,7 +159,8 @@ public class MainActivity extends AppCompatActivity {
         TextView questionLabel = (TextView) findViewById(R.id.questionLabel);
         questionPrefix = questionLabel.getText().toString();
         questionLabel.setText(questionPrefix + " " + questionNumber); // locale not good! (hebrew)
-        EditText questionText = (EditText) findViewById(R.id.questionText);
+        questionText = (EditText) findViewById(R.id.questionText);
+        Button eraseQuestionButton = (Button) findViewById(R.id.eraseQuestionButton);
         TextView timeSeparatorLabel = (TextView) findViewById(R.id.timeSeperatorLabel);
         TextView timeLabel = (TextView) findViewById(R.id.timeLabel);
         Button createClassButton = (Button) findViewById(R.id.createClassButton);
@@ -172,9 +173,9 @@ public class MainActivity extends AppCompatActivity {
 
         classComponents = new View[]{classNameText, classNameLabel, createClassButton, numberOfStudentsText};
         timeComponents = new View[]{timeLabel, timeSecondsPicker, timeSeparatorLabel, timeMinutesPicker};
-        questionComponents = new View[]{questionLabel, questionText};
+        questionComponents = new View[]{questionLabel, questionText, eraseQuestionButton};
         questionLabelComponent = new TextView[]{questionLabel};
-        buttons = new Button[]{createClassButton, rightButton, leftButton};
+        mainButtons = new Button[]{createClassButton, rightButton, leftButton};
 
         LinearLayout pieChartContainer = (LinearLayout) findViewById(R.id.pieChartGrid);
         // calculate in re-write data
@@ -315,6 +316,11 @@ public class MainActivity extends AppCompatActivity {
             newTimeMilliseconds = ((MAX_TIME_MINUTES * 60) + 59) * 1000;
         }
         countDown(newTimeMilliseconds);
+    }
+
+
+    public void eraseQuestionOnClick(View view) {
+        questionText.setText("");
     }
 
 

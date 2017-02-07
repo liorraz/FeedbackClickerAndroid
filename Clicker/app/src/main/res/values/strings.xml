@@ -8,4 +8,13 @@
     <string name="answerYes">ענו כן</string>
     <string name="answerNo">ענו לא</string>
     <string name="sendQuestionStr">שלח שאלה</string>
+    <string name="createClassStr">צור</string>
+    <string name="defaultStudentsNumStr">100</string>
+    <string name="newClassStr">כיתה חדשה</string>
+    <string name="classNameStr">שם הכיתה</string>
+    <string name="eraseQuestionStr">מחק</string>
+    <string name="typeQuestionHereStr">כתוב את השאלה כאן</string>
+    <string name="questionStr">שאלה</string>
+    <string name="timeSeperatorStr">:</string>
+    <string name="timeStr">זמן</string>
 </resources>

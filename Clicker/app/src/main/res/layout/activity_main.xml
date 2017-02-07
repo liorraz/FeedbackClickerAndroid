@@ -27,7 +27,7 @@
             android:id="@+id/classLayout">
 
             <Button
-                android:text="צור"
+                android:text="@string/createClassStr"
                 android:layout_width="59dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/createClassButton"
@@ -40,23 +40,22 @@
                 android:inputType="numberDecimal"
                 android:ems="10"
                 android:id="@+id/numberOfStudentsText"
-                android:text="100"
+                android:text="@string/defaultStudentsNumStr"
                 android:maxLength="3"
                 android:paddingLeft="20dp" />
 
             <EditText
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:text="כיתה חדשה"
+                android:text="@string/newClassStr"
                 android:ems="10"
                 android:id="@+id/classNameText"
                 android:layout_weight="1"
-                android:textSize="14sp"
-                android:singleLine="false" />
+                android:textSize="14sp" />
 
             <TextView
-                android:text="שם הכיתה"
+                android:text="@string/classNameStr"
                 android:layout_width="72dp"
                 android:layout_height="match_parent"
                 android:id="@+id/classNameLabel" />
@@ -70,10 +69,18 @@
             android:layout_weight="0.21"
             android:id="@+id/questionLayout">
 
+            <Button
+                android:text="@string/eraseQuestionStr"
+                android:layout_width="66dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/eraseQuestionButton"
+                android:visibility="invisible"
+                android:onClick="eraseQuestionOnClick"/>
+
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="כתוב את השאלה כאן"
+                android:text="@string/typeQuestionHereStr"
                 android:ems="10"
                 android:id="@+id/questionText"
                 android:textSize="14sp"
@@ -81,7 +88,7 @@
                 android:visibility="invisible" />
 
             <TextView
-                android:text="שאלה"
+                android:text="@string/questionStr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/questionLabel"
@@ -94,16 +101,13 @@
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="36dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
             android:layout_marginBottom="15dp"
             android:weightSum="1"
             android:id="@+id/answeredLayout">
 
             <TextView
                 android:text="@string/answerYes"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/answerYesLabel"
                 android:layout_weight="0.60"
@@ -123,7 +127,7 @@
             android:layout_width="match_parent"
             android:layout_height="84dp"
             android:id="@+id/pieChartGrid"
-            android:layout_weight="0.24"></LinearLayout>
+            android:layout_weight="0.24" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -140,7 +144,7 @@
                 android:visibility="invisible" />
 
             <TextView
-                android:text=":"
+                android:text="@string/timeSeperatorStr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/timeSeperatorLabel"
@@ -157,7 +161,7 @@
                 android:visibility="invisible" />
 
             <TextView
-                android:text="זמן"
+                android:text="@string/timeStr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/timeLabel"
@@ -178,7 +182,6 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/buttonLeft"
                 android:layout_weight="0.05"
-                android:elevation="0dp"
                 android:onClick="leftButtonOnClick"
                 android:visibility="invisible" />
 
