@@ -396,7 +396,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setMessage("Set duration of Scan BLE Devices");
         alertDialog.setTitle("Scan BLE Devices");
         final EditText input = new EditText(MainActivity.this);
-        input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
@@ -528,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setMessage("Set time for discoverability");
         alertDialog.setTitle("Enable Discoverability");
         final EditText input = new EditText(MainActivity.this);
-        input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT);
