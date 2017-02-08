@@ -25,23 +25,11 @@
             android:layout_weight="0.11"
             android:id="@+id/classLayout">
 
-            <Button
-                android:text="@string/createClassStr"
-                android:layout_width="59dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/createClassButton"
-                android:onClick="createClassButtonOnClick"
-                />
-
-            <EditText
-                android:layout_width="63dp"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:ems="10"
-                android:id="@+id/numberOfStudentsText"
-                android:text="@string/defaultStudentsNumStr"
-                android:maxLength="3"
-                android:paddingLeft="20dp" />
+            <TextView
+                android:text="@string/classNameStr"
+                android:layout_width="72dp"
+                android:layout_height="match_parent"
+                android:id="@+id/classNameLabel" />
 
             <EditText
                 android:layout_width="0dp"
@@ -53,11 +41,23 @@
                 android:layout_weight="1"
                 android:textSize="14sp" />
 
-            <TextView
-                android:text="@string/classNameStr"
-                android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:id="@+id/classNameLabel" />
+            <EditText
+                android:layout_width="63dp"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:ems="10"
+                android:id="@+id/numberOfStudentsText"
+                android:text="@string/defaultStudentsNumStr"
+                android:maxLength="3"
+                android:paddingLeft="20dp" />
+
+            <Button
+                android:text="@string/createClassStr"
+                android:layout_width="59dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/createClassButton"
+                android:onClick="createClassButtonOnClick"
+                />
 
         </LinearLayout>
 
@@ -68,13 +68,13 @@
             android:layout_weight="0.21"
             android:id="@+id/questionLayout">
 
-            <Button
-                android:text="@string/eraseQuestionStr"
-                android:layout_width="66dp"
+            <TextView
+                android:text="@string/questionStr"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/eraseQuestionButton"
-                android:visibility="invisible"
-                android:onClick="eraseQuestionOnClick"/>
+                android:id="@+id/questionLabel"
+                android:layout_weight="1"
+                android:visibility="invisible" />
 
             <EditText
                 android:layout_width="wrap_content"
@@ -86,13 +86,13 @@
                 android:layout_weight="1.46"
                 android:visibility="invisible" />
 
-            <TextView
-                android:text="@string/questionStr"
-                android:layout_width="wrap_content"
+            <Button
+                android:text="@string/eraseQuestionStr"
+                android:layout_width="66dp"
                 android:layout_height="wrap_content"
-                android:id="@+id/questionLabel"
-                android:layout_weight="1"
-                android:visibility="invisible" />
+                android:id="@+id/eraseQuestionButton"
+                android:visibility="invisible"
+                android:onClick="eraseQuestionOnClick"/>
 
         </LinearLayout>
 
@@ -105,18 +105,18 @@
             android:id="@+id/answeredLayout">
 
             <TextView
-                android:text="@string/answerNo"
-                android:layout_width="90dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/answerNoLabel"
-                android:visibility="invisible" />
-
-            <TextView
                 android:text="@string/answerYes"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/answerYesLabel"
                 android:layout_weight="0.60"
+                android:visibility="invisible" />
+
+            <TextView
+                android:text="@string/answerNo"
+                android:layout_width="90dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/answerNoLabel"
                 android:visibility="invisible" />
 
         </LinearLayout>
@@ -142,10 +142,18 @@
             android:weightSum="1"
             android:id="@+id/timeLayout">
 
+            <TextView
+                android:text="@string/timeStr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/timeLabel"
+                android:layout_weight="0.00"
+                android:visibility="invisible" />
+
             <NumberPicker
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/timeMinPick"
+                android:id="@+id/timeSecPic"
                 android:layout_weight="0.08"
                 android:visibility="invisible" />
 
@@ -162,16 +170,8 @@
             <NumberPicker
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/timeSecPic"
+                android:id="@+id/timeMinPick"
                 android:layout_weight="0.08"
-                android:visibility="invisible" />
-
-            <TextView
-                android:text="@string/timeStr"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/timeLabel"
-                android:layout_weight="0.00"
                 android:visibility="invisible" />
 
         </LinearLayout>
@@ -183,21 +183,21 @@
             android:id="@+id/buttonsLayout">
 
             <Button
-                android:text="@string/moreTimeStr"
-                android:layout_width="110dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonLeft"
-                android:layout_weight="0.05"
-                android:onClick="leftButtonOnClick"
-                android:visibility="invisible" />
-
-            <Button
                 android:text="@string/newQuestionStr"
                 android:layout_width="131dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/buttonRight"
                 android:layout_weight="0.04"
                 android:onClick="rightButtonOnClick"
+                android:visibility="invisible" />
+
+            <Button
+                android:text="@string/moreTimeStr"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/buttonLeft"
+                android:layout_weight="0.05"
+                android:onClick="leftButtonOnClick"
                 android:visibility="invisible" />
 
         </LinearLayout>

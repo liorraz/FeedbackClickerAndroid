@@ -12,7 +12,7 @@ import android.view.View;
 public class PieGraphView extends View {
     private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final int[] COLORS = {Color.GREEN, Color.RED, Color.GRAY};
-    private final RectF rectf = new RectF(50, 50, 500, 500);
+    private final RectF rectf = new RectF(20, 20, 250, 250);
 
     private final float[] valueDegrees;
 

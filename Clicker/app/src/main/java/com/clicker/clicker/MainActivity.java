@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.view.Menu;
@@ -380,25 +381,23 @@ public class MainActivity extends AppCompatActivity {
     //private boolean mScanningBLE = false;
 
     private BluetoothAdapter mBluetoothAdapter = null;
-    private BluetoothAdapter.LeScanCallback mLeScanCallback = null;
+
+
+    private final BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
+        @Override
+        public void onLeScan(final BluetoothDevice device, int rssi,
+                             byte[] scanRecord) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
+                }
+            });
+        }
+    };
+    private final Handler scanLEDevicesHandler = new Handler(Looper.getMainLooper());
 
     private void scanBLEDevices() {
-
-        if (mLeScanCallback == null) {
-            mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi,
-                                     byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
-                        }
-                    });
-                }
-            };
-        }
-
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setMessage("Set duration of Scan BLE Devices");
@@ -440,7 +439,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private Handler scanLEDevicesHandler = null;
 
     private void scanLeDevice(final boolean enable, final int period) {
         if (mBluetoothAdapter == null) {
@@ -448,9 +446,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         if (enable) {
-            if (scanLEDevicesHandler == null) {
-                scanLEDevicesHandler = new Handler();
-            }
             // Stops scanning after a pre-defined scan period.
             scanLEDevicesHandler.postDelayed(new Runnable() {
                 @Override
@@ -480,6 +475,11 @@ public class MainActivity extends AppCompatActivity {
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
+        if (mBluetoothAdapter == null) {
+            toast("BLE Adapter is null after get()");
+        } else if (!mBluetoothAdapter.isEnabled()) {
+            toast("BLE Adapter is not enabled after get()");
+        }
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
@@ -513,7 +513,7 @@ public class MainActivity extends AppCompatActivity {
                     // object and its info from the Intent.
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     String deviceName = device.getName();
-                    String deviceHardwareAddress = device.getAddress(); // MAC addressZ
+                    String deviceHardwareAddress = device.getAddress(); // MAC address
                     toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
                 }
             }
