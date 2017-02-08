@@ -277,7 +277,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void createClassButtonOnClick(View view) {
-        numberOfStudents = Integer.parseInt(numberOfStudentsText.getText().toString());
+        String numberOfStudentsString = null;
+        try {
+            numberOfStudentsString = numberOfStudentsText.getText().toString();
+            numberOfStudents = Integer.parseInt(numberOfStudentsString);
+        } catch (NumberFormatException ignore) {
+            toast("Can't translate given number of students ('" + numberOfStudentsString + "') to integer");
+            return;
+        }
+
         state = state.turnTo(State.QUESTION_DEFINITION);
     }
 
@@ -359,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
                 enableBLE();
                 return true;
             case R.id.change_ble_name:
-                toast("Not supported - change BT name ...");
+                toast("Not supported - select change BT name instead...");
                 return true;
             case R.id.scan_ble_devices:
                 scanBLEDevices();
@@ -405,8 +413,16 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setPositiveButton("Enable",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // Stops scanning after 10 seconds.
-                        int period = Integer.parseInt(input.getText().toString());
+                        int period;
+                        String inputString = null;
+                        try {
+                            inputString = input.getText().toString();
+                            period = Integer.parseInt(inputString);
+                        } catch (NumberFormatException ignore) {
+                            toast("Can't translate given input ('" + inputString + "') to integer");
+                            return;
+                        }
+
                         scanLeDevice(true, period);
                     }
                 });
@@ -537,9 +553,17 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.setPositiveButton("Go",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        int time = Integer.parseInt(input.getText().toString());
-                        Intent discoverableIntent =
-                                new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                        int time;
+                        String inputString = null;
+                        try {
+                            inputString = input.getText().toString();
+                            time = Integer.parseInt(inputString);
+                        } catch (NumberFormatException ignore) {
+                            toast("Can't translate given input ('" + inputString + "') to integer");
+                            return;
+                        }
+                        toast("Start discovery for duration: " + time);
+                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, time);
                         startActivity(discoverableIntent);
                     }
