@@ -23,4 +23,7 @@
     <string name="scanBLEdevices">Scan BLE Devices</string>
     <string name="enableBTDiscoverability">Enable BT Discoverability</string>
     <string name="enableBLE">Enable BLE</string>
+    <string name="durationOfScanStr">Set duration of Scan BLE Devices</string>
+    <string name="search_devices">Search</string>
+    <string name="stop_search_devices">Stop Search</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.clicker.clicker;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -20,13 +21,17 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -362,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
                 enableBTDiscoverability();
                 return true;
             case R.id.scan_bt_devices:
-                scanBTDevices();
+                scanDevices();
                 return true;
             case R.id.enable_ble:
                 enableBLE();
@@ -370,15 +375,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.change_ble_name:
                 toast("Not supported - select change BT name instead...");
                 return true;
-            case R.id.scan_ble_devices:
-                scanBLEDevices();
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    //private boolean mScanningBLE = false;
+    private boolean scanningDevicesForBLE = false;
+    private boolean scanningDevicesForBT = false;
+
 
     private BluetoothAdapter mBluetoothAdapter = null;
 
@@ -390,55 +394,75 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
+//                    toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
+                    devicesListAdapter.add(device.getName() + " @ " + device.getAddress());
+                    devicesListAdapter.notifyDataSetChanged();
                 }
             });
         }
     };
     private final Handler scanLEDevicesHandler = new Handler(Looper.getMainLooper());
+    private ArrayAdapter<String> devicesListAdapter;
+    private CheckBox bleCheckBox;
+    private EditText bleSearchInput;
 
-    private void scanBLEDevices() {
-
+    @SuppressLint("InflateParams")
+    private void scanDevices() {
+        // create dialog
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
-        alertDialog.setMessage("Set duration of Scan BLE Devices");
-        alertDialog.setTitle("Scan BLE Devices");
-        final EditText input = new EditText(MainActivity.this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        input.setLayoutParams(lp);
-        alertDialog.setView(input);
-        alertDialog.setPositiveButton("Enable",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        int period;
-                        String inputString = null;
-                        try {
-                            inputString = input.getText().toString();
-                            period = Integer.parseInt(inputString);
-                        } catch (NumberFormatException ignore) {
-                            toast("Can't translate given input ('" + inputString + "') to integer");
-                            return;
-                        }
 
-                        scanLeDevice(true, period);
-                    }
-                });
-
-        alertDialog.setNegativeButton("Disable",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        scanLeDevice(false, 0);
-                        dialog.cancel();
-                    }
-                });
-
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        View inflate = getLayoutInflater().inflate(R.layout.search_devices_layout, null);
+        alertDialog.setView(inflate);
         alertDialog.show();
 
+        bleCheckBox = (CheckBox) inflate.findViewById(R.id.bleCheckBox);
+        bleSearchInput = (EditText) inflate.findViewById(R.id.scanDurationText);
+        ListView devicesList = (ListView) inflate.findViewById(R.id.devicesList);
+        devicesListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
+        devicesList.setAdapter(devicesListAdapter);
+    }
+
+
+    public void searchButtonOnClick(View view) {
+        boolean isBLE = bleCheckBox.isChecked();
+
+        if (isBLE) {
+            String inputStr = null;
+            try {
+                inputStr = bleSearchInput.getText().toString();
+                int duration = Integer.parseInt(inputStr);
+                scanLeDevice(true, duration);
+                scanningDevicesForBLE = true;
+
+            } catch (NumberFormatException ignore) {
+                toast("Can't translate given input ('" + inputStr + "') to integer");
+            }
+        } else {
+            scanBTDevices();
+            scanningDevicesForBT = true;
+        }
 
     }
 
+    public void stopSearchButtonOnClick(View view) {
+        boolean isBLE = bleCheckBox.isChecked();
+        boolean isBT = !isBLE;
+        if ((isBLE && !scanningDevicesForBLE) || (isBT && !scanningDevicesForBT)) {
+            toast("Can't stop scanning, since never started for " + (isBLE ? "BLE" : "BT"));
+            return;
+        }
+        // update flag
+        if (isBLE) {
+            scanLeDevice(false, 0);
+            scanningDevicesForBLE = false;
+        } else {
+            toast("Scan BT was not stopped since there is no such option...");
+            scanningDevicesForBT = false;
+        }
+
+    }
 
     private void scanLeDevice(final boolean enable, final int period) {
         if (mBluetoothAdapter == null) {
@@ -512,9 +536,9 @@ public class MainActivity extends AppCompatActivity {
                     // Discovery has found a device. Get the BluetoothDevice
                     // object and its info from the Intent.
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                    String deviceName = device.getName();
-                    String deviceHardwareAddress = device.getAddress(); // MAC address
-                    toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
+//                    toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
+                    devicesListAdapter.add(device.getName() + " @ " + device.getAddress());
+                    devicesListAdapter.notifyDataSetChanged();
                 }
             }
         };

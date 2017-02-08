@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/durationOfScanStr" />
+
+
+    <EditText
+        android:id="@+id/scanDurationText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal" />
+
+    <CheckBox
+        android:text="BLE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/bleCheckBox" />
+
+    <Button
+        android:id="@+id/searchDevicesButtonD"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/search_devices"
+        android:onClick="searchButtonOnClick"/>
+
+    <Button
+        android:id="@+id/stopSearchDevicesButtonD"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/stop_search_devices"
+        android:onClick="stopSearchButtonOnClick"/>
+
+    <ListView
+        android:id="@+id/devicesList"
+        android:layout_width="match_parent"
+        android:layout_height="307dp" />
+</LinearLayout>

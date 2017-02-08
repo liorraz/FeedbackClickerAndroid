@@ -15,8 +15,5 @@
     <item
         android:id="@+id/change_ble_name"
         android:title="@string/changeBLEname" />
-    <item
-        android:id="@+id/scan_ble_devices"
-        android:title="@string/scanBLEdevices" />
 
 </menu>
