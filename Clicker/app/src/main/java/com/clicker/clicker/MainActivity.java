@@ -74,6 +74,11 @@ public class MainActivity extends AppCompatActivity {
     private int noNumber = 0;
     private int numberOfStudents = 0;
 
+    // bluetooth
+    private String oldBTName;
+
+    private long lastBTSCanStart = 0;
+
     private final static Random random = new Random();    // for testing only
 
 
@@ -163,6 +168,33 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         storeUI();
+
+        devicesListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                new ArrayList<String>());
+        devicesListAdapter.setNotifyOnChange(true);
+
+        // Create a BroadcastReceiver for ACTION_FOUND , for BT startDiscovery() handling
+        mReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                    // Discovery has found a device. Get the BluetoothDevice
+                    // object and its info from the Intent.
+                    long diffTime = System.currentTimeMillis() - lastBTSCanStart;
+
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//                    toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
+                    devicesListAdapter.add(device.getName() + " @ " + device.getAddress() +
+                            " found in: " + diffTime + "ms");
+                }
+            }
+        };
+
+
+        // Register for broadcasts when a device is discovered.
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, filter);
+
     }
 
     private void storeUI() {
@@ -396,7 +428,6 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
 //                    toast("BLE Devices found with name: " + device.getName() + " address: " + device.getAddress());
                     devicesListAdapter.add(device.getName() + " @ " + device.getAddress());
-                    devicesListAdapter.notifyDataSetChanged();
                 }
             });
         }
@@ -420,8 +451,8 @@ public class MainActivity extends AppCompatActivity {
         bleCheckBox = (CheckBox) inflate.findViewById(R.id.bleCheckBox);
         bleSearchInput = (EditText) inflate.findViewById(R.id.scanDurationText);
         ListView devicesList = (ListView) inflate.findViewById(R.id.devicesList);
-        devicesListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         devicesList.setAdapter(devicesListAdapter);
+        devicesListAdapter.clear();
     }
 
 
@@ -528,26 +559,20 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mReceiver = null;
 
     private void scanBTDevices() {
-        // Create a BroadcastReceiver for ACTION_FOUND.
-        mReceiver = new BroadcastReceiver() {
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                    // Discovery has found a device. Get the BluetoothDevice
-                    // object and its info from the Intent.
-                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                    toast("BT Device found with name: " + deviceName + " , mac: " + deviceHardwareAddress);
-                    devicesListAdapter.add(device.getName() + " @ " + device.getAddress());
-                    devicesListAdapter.notifyDataSetChanged();
-                }
-            }
-        };
+        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (btAdapter == null) {
+            toast("No BT Support, can't scan BT devices !!!");
+        } else {
+            btAdapter.enable();
 
+            btAdapter.cancelDiscovery(); // cancel last discovery
 
-        // Register for broadcasts when a device is discovered.
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mReceiver, filter);
-        toast("mReceiver registered");
+            lastBTSCanStart = System.currentTimeMillis();
+
+            final boolean returnValue = btAdapter.startDiscovery();
+            toast("Return value after discover: " + returnValue);
+            devicesListAdapter.add("Regular BT startDiscovery() return is: " + returnValue);
+        }
     }
 
 
@@ -558,8 +583,22 @@ public class MainActivity extends AppCompatActivity {
         if (mReceiver != null) {
             // Don't forget to unregister the ACTION_FOUND receiver.
             unregisterReceiver(mReceiver);
-
         }
+
+        if (oldBTName != null) { // mean someone change BT name - make sure it is returned
+            // "thin" version of change BT name w/o post delay
+            BluetoothAdapter myBTAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (myBTAdapter == null) {
+                toast("No BT Support, can't restore BT name !!!");
+            } else {
+                String currentName = myBTAdapter.getName();
+                if (!currentName.equalsIgnoreCase(oldBTName)) {
+                    myBTAdapter.enable(); // no wait here - no time ...
+                    myBTAdapter.setName(oldBTName);
+                }
+            }
+        }
+
     }
 
 
@@ -637,14 +676,19 @@ public class MainActivity extends AppCompatActivity {
         if (newName.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     "Can't have empty BT Name", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         final BluetoothAdapter myBTAdapter = BluetoothAdapter.getDefaultAdapter();
-        final long timeToGiveUpMs = System.currentTimeMillis() + 10000;
         if (myBTAdapter == null) {
             toast("No BT Support !!!");
         } else {
+            final long timeToGiveUpMs = System.currentTimeMillis() + 10000;
             String oldName = myBTAdapter.getName();
+            if (oldBTName == null) { // first time need to remember to restore it later on
+                oldBTName = oldName;
+            }
+
             toast("OLD BT Name is: " + oldName);
             if (!oldName.equalsIgnoreCase(newName)) {
                 final Handler myTimerHandler = new Handler();
@@ -676,5 +720,6 @@ public class MainActivity extends AppCompatActivity {
     private void toast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
 
 }
